@@ -5,12 +5,18 @@ import useDataFetching from '@/hooks/useDataFetching'
 import { ModalFormUser, Pagination, Search, Table } from '@/components'
 import { useModal } from '@/hooks/useModal'
 
+type TypeModal = "CREATE" | "EDIT" | "DETAIL" | "DELETE"
+
 const Index = () => {
     const { isOpen, openModal, closeModal } = useModal(false)
+    const [typeModal, setTypeModal] = useState<TypeModal>('CREATE')
+
     const [data, setData] = useState([])
     const [pagination, setPagination] = useState<any>({})
 
     const [search, setSearch] = useState('')
+
+    const [dataDetail, setDataDetail] = useState({})
 
     const { isLoading, refetch } = useDataFetching(`/users`, {
         onSuccess: (data) => {
@@ -20,8 +26,10 @@ const Index = () => {
         onError: (err) => toast.error(err?.response?.data?.message || 'Server error, Please try again later!')
     })
 
-    const handleOpenModal = (data: Object) => {
-        console.log(data)
+    const handleOpenModal = (data: Object, type: TypeModal) => {
+        openModal()
+        setTypeModal(type)
+        setDataDetail(data)
     }
 
     const changeSearch = (value: string) => setSearch(value)
@@ -30,10 +38,16 @@ const Index = () => {
 
     return (
         <div>
-            {isOpen && <ModalFormUser type='CREATE' />}
+            {isOpen && <ModalFormUser refetch={() => refetch({ name: search, page: pagination?.page }, false)} close={closeModal} dataDetail={dataDetail} type={typeModal} />}
 
             <Search value={search} onChange={changeSearch} onClick={handleSearch} />
-            <Table data={data} onClickDetail={(data) => handleOpenModal(data)} isLoading={isLoading} />
+            <Table
+                data={data}
+                onClickDetail={(data) => handleOpenModal(data, "DETAIL")}
+                onClickDelete={(data) => handleOpenModal(data, "DELETE")}
+                onClickUpdate={(data) => handleOpenModal(data, "EDIT")}
+                isLoading={isLoading}
+            />
 
             {data?.length > 0 &&
                 <Pagination currentPage={pagination?.page}

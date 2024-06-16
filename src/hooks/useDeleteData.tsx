@@ -8,28 +8,32 @@ interface UseDeleteDataOptions {
 
 interface UseDeleteDataResult<T> {
     data: T | null;
-    loading: boolean;
+    isLoading: boolean;
     deleteData: (id: string) => Promise<void>;
 }
 
 const useDeleteData = <T,>(url: string, { onSuccess, onError }: UseDeleteDataOptions): UseDeleteDataResult<T> => {
     const [data, setData] = useState<T | null>(null);
-    const [loading, setLoading] = useState<boolean>(false);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
 
     const deleteData = async (id: string): Promise<void> => {
-        setLoading(true);
+        setIsLoading(true);
         try {
-            const response = await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}${url}/${id}`);
+            const response = await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}${url}/${id}`, {
+                headers: {
+                    Authorization: `Bearer ${process.env.NEXT_PUBLIC_TOKEN}`
+                }
+            });
             setData(response.data);
             if (onSuccess) onSuccess(response.data);
         } catch (error) {
             if (onError) onError(error);
         } finally {
-            setLoading(false);
+            setIsLoading(false);
         }
     }
 
-    return { data, loading, deleteData };
+    return { data, isLoading, deleteData };
 }
 
 export default useDeleteData;
