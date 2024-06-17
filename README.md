@@ -1,4 +1,4 @@
-# Sales Analythic
+# Frontend Challenge
 
 <!-- NAVIGATION -->
 <ol>
@@ -34,8 +34,10 @@ Some technology used in this application.
 - [React Hook Form](https://react-hook-form.com/)
 - [Axios](https://axios-http.com/docs/intro)
 
-- ## Screenshot
+## Screenshot
 
+![Uploading Screenshot 2024-06-17 at 13.34.17.png…]()
+![Uploading Screenshot 2024-06-17 at 13.24.22.png…]()
 
 ## Getting Started
 
@@ -47,6 +49,7 @@ To get a local copy up and running follow these simple steps.
 Before installing, you must be install [nodejs and npm.](https://nodejs.org)
 
 ### Installation
+
 
 1. Clone this repo
 
