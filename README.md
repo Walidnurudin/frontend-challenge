@@ -36,8 +36,12 @@ Some technology used in this application.
 
 ## Screenshot
 
-![Uploading Screenshot 2024-06-17 at 13.34.17.png…]()
-![Uploading Screenshot 2024-06-17 at 13.24.22.png…]()
+- Home
+<img width="1680" alt="Screenshot 2024-06-17 at 13 24 22" src="https://github.com/Walidnurudin/frontend-challenge/assets/59267364/2d19a0c3-719a-4f8c-b1d2-ff48240ec005">
+
+- User Management
+<img width="1680" alt="Screenshot 2024-06-17 at 13 34 17" src="https://github.com/Walidnurudin/frontend-challenge/assets/59267364/6e1aa56d-6b48-483e-bb9b-96a94a8013cf">
+
 
 ## Getting Started
 
