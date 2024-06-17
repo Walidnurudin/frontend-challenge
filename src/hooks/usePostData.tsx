@@ -8,14 +8,14 @@ interface UsePostDataOptions {
     isFormData?: boolean;
 }
 
-const usePostData = <T,>(url: string, { token, onSuccess, onError, isFormData = false }: UsePostDataOptions) => {
+const usePostData = <T,>(url: string, { onSuccess, onError, isFormData = false }: UsePostDataOptions) => {
     const [data, setData] = useState<T | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
 
     const postData = async (dataToPost: any): Promise<T | any> => {
         setIsLoading(true);
         try {
-            const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
+            const headers: Record<string, string> = { Authorization: `Bearer ${process.env.NEXT_PUBLIC_TOKEN}` };
 
             headers['Content-Type'] = isFormData ? 'multipart/form-data' : 'application/json';
 

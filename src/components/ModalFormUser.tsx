@@ -3,6 +3,9 @@ import usePostData from '@/hooks/usePostData'
 import InputCom from './InputCom'
 import useDeleteData from '@/hooks/useDeleteData'
 import toast from 'react-hot-toast'
+import { Controller, useForm } from 'react-hook-form'
+import useUpdateData from '@/hooks/useUpdateData'
+import MessageError from './MessageError'
 
 type ModalFormUserProps = {
     type: "CREATE" | "EDIT" | "DETAIL" | "DELETE",
@@ -12,26 +15,53 @@ type ModalFormUserProps = {
 }
 
 const ModalFormUser = ({ type, dataDetail, close, refetch }: ModalFormUserProps) => {
-    const [data, setData] = useState({
-        name: '',
-        gender: '',
-        email: '',
-        status: ''
+    const {
+        handleSubmit,
+        formState: { errors },
+        setValue,
+        control,
+        watch,
+        reset
+    } = useForm({
+        mode: 'onChange',
+        defaultValues: {
+            name: '',
+            email: '',
+            gender: 'male',
+            status: 'active'
+        }
     })
 
     useEffect(() => {
-        if (type === 'DETAIL') setData(dataDetail)
-    }, [dataDetail, type])
+        if (type === 'DETAIL' || type === "EDIT") {
+            setValue('name', dataDetail?.name)
+            setValue('email', dataDetail?.email)
+            setValue('gender', dataDetail?.gender)
+            setValue('status', dataDetail?.status)
+        }
+    }, [dataDetail, setValue, type])
 
     const { postData, isLoading } = usePostData('/users', {
-        onSuccess: (data) => {
-            console.log(data)
+        onSuccess: () => {
+            close()
+            refetch()
+            toast.success('Data has been created')
         },
-        onError: (error) => toast.error(error?.response?.data?.message || 'Server error, Please try again later!')
+        onError: (error) => toast.error(error?.response?.data?.data?.[0]?.message || 'Server error, Please try again later!')
+    })
+
+
+    const { updateData, isLoading: isLoadingUpdate } = useUpdateData(`/users/${dataDetail?.id}`, {
+        onSuccess: () => {
+            close()
+            refetch()
+            toast.success('Data has been updated')
+        },
+        onError: (error) => toast.error(error?.response?.data?.data?.[0]?.message || 'Server error, Please try again later!')
     })
 
     const { deleteData, isLoading: isLoadingDelete } = useDeleteData('/users', {
-        onSuccess: (data) => {
+        onSuccess: () => {
             close()
             refetch()
             toast.success('Data has been deleted')
@@ -39,8 +69,9 @@ const ModalFormUser = ({ type, dataDetail, close, refetch }: ModalFormUserProps)
         onError: (error) => toast.error(error?.response?.data?.message || 'Server error, Please try again later!')
     })
 
-    const submit = () => {
-        postData({
+    const submit = (data: any) => {
+        if (type === 'EDIT') updateData({ ...data })
+        else postData({
             ...data
         })
     }
@@ -67,48 +98,91 @@ const ModalFormUser = ({ type, dataDetail, close, refetch }: ModalFormUserProps)
                         <form className="w-full flex flex-col gap-4">
                             <div className="flex items-start flex-col justify-start">
                                 <label className="text-sm text-gray-700 dark:text-gray-200 mr-2">Name</label>
-                                <InputCom disabled={type === 'DETAIL'} value={data.name} onChange={(e: any) => setData({ ...data, name: e.target.value })} />
+                                <Controller
+                                    control={control}
+                                    name='name'
+                                    rules={{
+                                        required: 'Name is required'
+                                    }}
+                                    render={({ field }) => (
+                                        <InputCom {...field} disabled={type === 'DETAIL'} value={watch()?.name} onChange={(e: any) => setValue('name', e.target.value)} />
+                                    )}
+                                />
+
+                                {errors.name && <MessageError message={errors?.name?.message} />}
                             </div>
 
                             <div className="flex items-start flex-col justify-start">
                                 <label className="text-sm text-gray-700 dark:text-gray-200 mr-2">Gender</label>
-                                <select value={data?.gender} onChange={
-                                    (e: any) => setData({
-                                        ...data,
-                                        gender: e.target.value
-                                    })
-                                }
-                                    disabled={type === 'DETAIL'}
-                                    className="w-full px-3 dark:text-gray-200 dark:bg-gray-900 py-2 rounded-md border border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                >
-                                    <option value='male'>Male</option>
-                                    <option value='female'>Female</option>
-                                </select>
+                                <Controller
+                                    control={control}
+                                    name='gender'
+                                    rules={{
+                                        required: 'Gender is required'
+                                    }}
+                                    render={({ field }) => (
+                                        <select {...field} value={watch()?.gender} onChange={(e: any) => setValue('gender', e.target.value)}
+                                            disabled={type === 'DETAIL'}
+                                            className="w-full px-3 dark:text-gray-200 dark:bg-gray-900 py-2 rounded-md border border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                        >
+                                            <option value='male'>Male</option>
+                                            <option value='female'>Female</option>
+                                        </select>
+                                    )}
+                                />
+
+
+                                {errors.gender && <MessageError message={errors?.gender?.message} />}
                             </div>
 
                             <div className="flex items-start flex-col justify-start">
                                 <label className="text-sm text-gray-700 dark:text-gray-200 mr-2">Email</label>
-                                <InputCom disabled={type === 'DETAIL'} value={data.email} type='email' onChange={(e: any) => setData({ ...data, email: e.target.value })} />
+                                <Controller
+                                    control={control}
+                                    name='email'
+                                    rules={{
+                                        required: 'Email is required',
+                                        pattern: {
+                                            value: /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/,
+                                            message: 'Email is not valid'
+                                        }
+                                    }}
+                                    render={({ field }) => (
+                                        <InputCom {...field} disabled={type === 'DETAIL'} value={watch()?.email} type='email' onChange={(e: any) => setValue('email', e.target.value)} />
+                                    )}
+                                />
+
+
+                                {errors.email && <MessageError message={errors?.email?.message} />}
                             </div>
 
                             <div className="flex items-start flex-col justify-start">
                                 <label className="text-sm text-gray-700 dark:text-gray-200 mr-2">Status</label>
-                                <select value={data?.status} onChange={
-                                    (e: any) => setData({
-                                        ...data,
-                                        status: e.target.value
-                                    })
-                                }
-                                    disabled={type === 'DETAIL'}
-                                    className="w-full px-3 dark:text-gray-200 dark:bg-gray-900 py-2 rounded-md border border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                >
-                                    <option value='active'>Active</option>
-                                    <option value='inactive'>Inactive</option>
-                                </select>
+                                <Controller
+                                    control={control}
+                                    name='status'
+                                    rules={{
+                                        required: 'Status is required'
+                                    }}
+                                    render={({ field }) => (
+                                        <select {...field} value={watch()?.status} onChange={(e: any) => setValue('status', e.target.value)}
+                                            disabled={type === 'DETAIL'}
+                                            className="w-full px-3 dark:text-gray-200 dark:bg-gray-900 py-2 rounded-md border border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                        >
+                                            <option value='active'>Active</option>
+                                            <option value='inactive'>Inactive</option>
+                                        </select>
+                                    )}
+                                />
+
+
+                                {errors.status && <MessageError message={errors?.status?.message} />}
                             </div>
 
                             {type !== 'DETAIL' && (
-                                <button className="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-md shadow-sm" onClick={submit}>Submit</button>
+                                <button className="bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-md shadow-sm" onClick={isLoading || isLoadingUpdate ? () => { } : handleSubmit(submit)}>
+                                    {isLoading || isLoadingUpdate ? 'Loading...' : 'Submit'}
+                                </button>
                             )}
                         </form>
                     </>

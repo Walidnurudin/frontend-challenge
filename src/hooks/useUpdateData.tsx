@@ -9,7 +9,7 @@ interface UseUpdateDataOptions<T> {
 
 interface UseUpdateDataResult<T> {
     data: T | null;
-    loading: boolean;
+    isLoading: boolean;
     updateData: (data: Partial<T>, id?: string) => Promise<void>;
 }
 
@@ -18,27 +18,29 @@ const useUpdateData = <T,>(
     { onSuccess, onError, method = 'PUT' }: UseUpdateDataOptions<T>
 ): UseUpdateDataResult<T> => {
     const [responseData, setResponseData] = useState<T | null>(null);
-    const [loading, setLoading] = useState<boolean>(false);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
 
     const updateData = async (data: Partial<T>, id?: string): Promise<void> => {
-        setLoading(true);
+        setIsLoading(true);
         try {
             let response;
+            const headers: Record<string, string> = { Authorization: `Bearer ${process.env.NEXT_PUBLIC_TOKEN}` };
+
             if (method === 'PUT') {
-                response = await axios.put(`${process.env.NEXT_PUBLIC_API_URL}${url}`, data);
+                response = await axios.put(`${process.env.NEXT_PUBLIC_API_URL}${url}`, data, { headers });
             } else {
-                response = await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}${url}`, data);
+                response = await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}${url}`, data, { headers });
             }
             setResponseData(response.data);
             if (onSuccess) onSuccess(response.data);
         } catch (error) {
             if (onError) onError(error);
         } finally {
-            setLoading(false);
+            setIsLoading(false);
         }
     };
 
-    return { data: responseData, loading, updateData };
+    return { data: responseData, isLoading, updateData };
 }
 
 export default useUpdateData;

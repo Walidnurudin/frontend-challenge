@@ -40,7 +40,11 @@ const Index = () => {
         <div>
             {isOpen && <ModalFormUser refetch={() => refetch({ name: search, page: pagination?.page }, false)} close={closeModal} dataDetail={dataDetail} type={typeModal} />}
 
-            <Search value={search} onChange={changeSearch} onClick={handleSearch} />
+            <div className='flex justify-end w-3/4 sm:w-2/3 mx-auto'>
+            </div>
+
+            <Search value={search} onChange={changeSearch} onClick={handleSearch} onCreate={() => handleOpenModal({}, "CREATE")} />
+
             <Table
                 data={data}
                 onClickDetail={(data) => handleOpenModal(data, "DETAIL")}
@@ -49,12 +53,13 @@ const Index = () => {
                 isLoading={isLoading}
             />
 
-            {data?.length > 0 &&
+            {
+                data?.length > 0 &&
                 <Pagination currentPage={pagination?.page}
                     onPageChange={(page) => refetch({ page, name: search }, false)}
                     totalPages={pagination?.total} />
             }
-        </div>
+        </div >
     )
 }
 
